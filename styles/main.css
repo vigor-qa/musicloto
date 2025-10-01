@@ -15,24 +15,26 @@ h1 {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 20px;
+  gap: 14px;
   margin: 20px 0;
-  padding: 10px;
+  padding: 0 10px;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-/* Крупные кнопки */
 .number-btn {
-  width: 100px;
-  height: 100px;
-  font-size: 28px;
+  width: 80px;
+  height: 80px;
+  font-size: 24px;
   font-weight: bold;
   background: #4CAF50;
   color: white;
   border: none;
-  border-radius: 16px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transition: all 0.25s ease;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -40,10 +42,9 @@ h1 {
 
 .number-btn:hover:not(.played) {
   background: #45a049;
-  transform: scale(1.05);
+  transform: scale(1.04);
 }
 
-/* Сыгранные кнопки */
 .number-btn.played {
   background: #95a5a6;
   cursor: not-allowed;
@@ -169,17 +170,16 @@ h1 {
 /* Адаптивность */
 @media (max-width: 600px) {
   .number-btn {
-    width: 80px;
-    height: 80px;
-    font-size: 24px;
+    width: 68px;
+    height: 68px;
+    font-size: 20px;
   }
+}
 
-  .modal-content {
-    width: 95%;
-    padding: 20px;
-  }
-
-  h1 {
-    font-size: 24px;
+@media (min-width: 1200px) {
+  .number-btn {
+    width: 90px;
+    height: 90px;
+    font-size: 26px;
   }
 }
