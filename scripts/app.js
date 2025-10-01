@@ -1,10 +1,10 @@
 // Пути к ресурсам
 const BASE_AUDIO_PATH = 'audio/';
-const BASE_IMAGE_PATH = 'images/';
+const BASE_IMAGE_PATH = 'photo/';
 
 // Генерация путей для 10 элементов
 const audioSrc = Array.from({ length: 10 }, (_, i) => `${BASE_AUDIO_PATH}${i + 1}.mp3`);
-const imageSrc = Array.from({ length: 10 }, (_, i) => `${BASE_IMAGE_PATH}${i + 1}.jpg`);
+const photoSrc = Array.from({ length: 10 }, (_, i) => `${BASE_IMAGE_PATH}${i + 1}.jpg`);
 
 let currentAudio = null;
 let currentButton = null;
@@ -40,7 +40,7 @@ function playTrack(index, button) {
   currentButton = button;
 
   // Обновить изображение и показать модалку
-  modalImage.src = imageSrc[index];
+  modalImage.src = photoSrc[index];
   modal.style.display = 'block';
 
   // Завершение воспроизведения
