@@ -1,13 +1,13 @@
 // Пути к ресурсам
 const BASE_AUDIO_PATH = 'audio/';
-const BASE_IMAGE_PATH = 'photo/';
+const BASE_IMAGE_PATH = 'images/';
 
 // Генерация путей для 10 элементов
 const audioSrc = Array.from({ length: 10 }, (_, i) => `${BASE_AUDIO_PATH}${i + 1}.mp3`);
-const photoSrc = Array.from({ length: 10 }, (_, i) => `${BASE_IMAGE_PATH}${i + 1}.jpg`);
+const imageSrc = Array.from({ length: 10 }, (_, i) => `${BASE_IMAGE_PATH}${i + 1}.jpg`);
 
 let currentAudio = null;
-let currentButton = null;
+let playedCount = 0; // Счётчик сыгранных уникальных кнопок
 
 // DOM-элементы
 const container = document.getElementById('buttons-container');
@@ -28,61 +28,67 @@ for (let i = 1; i <= 10; i++) {
 
 // Воспроизведение трека
 function playTrack(index, button) {
-  // Остановить текущее аудио, если играет
+  // Если уже сыграно — не реагировать
+  if (button.classList.contains('played')) {
+    return;
+  }
+
+  // Остановить текущее аудио
   if (currentAudio) {
     currentAudio.pause();
     currentAudio = null;
   }
 
-  // Создать новое аудио
   const audio = new Audio(audioSrc[index]);
   currentAudio = audio;
-  currentButton = button;
 
-  // Обновить изображение и показать модалку
-  modalImage.src = photoSrc[index];
+  // Показать модалку
+  modalImage.src = imageSrc[index];
   modal.style.display = 'block';
 
-  // Завершение воспроизведения
-  audio.onended = finishTrack;
+  // Обработка завершения
+  audio.onended = () => finishTrack(button);
 
   // Воспроизвести
   audio.play().catch(err => {
-    console.error('Ошибка воспроизведения аудио:', err);
-    alert('Не удалось воспроизвести аудио. Проверьте файлы в папке audio/');
+    console.error('Ошибка воспроизведения:', err);
+    alert('Не удалось воспроизвести аудио. Проверьте папку audio/');
   });
 }
 
 // Остановка вручную
-stopButton.addEventListener('click', stopAudio);
-
-function stopAudio() {
+stopButton.addEventListener('click', () => {
   if (currentAudio) {
     currentAudio.pause();
-    currentAudio.currentTime = 0;
     currentAudio = null;
   }
-  finishTrack();
-}
+  // Закрыть модалку и пометить кнопку как сыгранную
+  const buttons = document.querySelectorAll('.number-btn');
+  const currentBtn = Array.from(buttons).find(btn =>
+    !btn.classList.contains('played')
+  );
+  if (currentBtn) finishTrack(currentBtn);
+});
 
-// Завершение: закрыть модалку, удалить кнопку
-function finishTrack() {
+// Завершение: пометить кнопку и проверить победу
+function finishTrack(button) {
   modal.style.display = 'none';
 
-  if (currentButton) {
-    currentButton.remove();
-    currentButton = null;
-  }
+  // Пометить как сыгранную (только если ещё не помечена)
+  if (!button.classList.contains('played')) {
+    button.classList.add('played');
+    playedCount++;
 
-  // Проверка завершения игры
-  if (document.querySelectorAll('.number-btn').length === 0) {
-    completionMessage.style.display = 'block';
+    // Проверка завершения
+    if (playedCount === 10) {
+      completionMessage.style.display = 'block';
+    }
   }
 }
 
 // Закрытие модалки по клику вне контента
 window.addEventListener('click', (event) => {
   if (event.target === modal) {
-    stopAudio();
+    stopButton.click(); // триггерим остановку
   }
 });
