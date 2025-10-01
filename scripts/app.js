@@ -1,132 +1,151 @@
-// Пути к ресурсам
+// Пути
 const BASE_AUDIO_PATH = 'audio/';
 const BASE_IMAGE_PATH = 'images/';
-const TOTAL_RESOURCES = 20; // 10 аудио + 10 изображений
 
-let loadedCount = 0;
-let audioCache = [];
-let imageCache = [];
+// Состояние ресурсов: { loaded: false, audio: null, image: null, promise: Promise }
+const resources = Array.from({ length: 10 }, (_, i) => ({
+  index: i,
+  loaded: false,
+  audio: null,
+  image: null,
+  loadPromise: null
+}));
 
-const loadingScreen = document.getElementById('loading-screen');
-const gameContainer = document.getElementById('game-container');
-const progressText = document.getElementById('progress');
+let playedCount = 0;
 
-// Функция обновления прогресса
-function updateProgress() {
-  loadedCount++;
-  progressText.textContent = `${loadedCount} из ${TOTAL_RESOURCES}`;
-  if (loadedCount === TOTAL_RESOURCES) {
-    // Все ресурсы загружены — показываем игру
-    setTimeout(() => {
-      loadingScreen.style.display = 'none';
-      gameContainer.style.display = 'block';
-      initGame();
-    }, 300); // небольшая задержка для плавности
-  }
+// DOM
+const container = document.getElementById('buttons-container');
+const modal = document.getElementById('modal');
+const modalImage = document.getElementById('modal-image');
+const modalLoader = document.getElementById('modal-loader');
+const stopButton = document.querySelector('.stop-btn');
+const completionMessage = document.getElementById('completion-message');
+
+// === 1. Создаём кнопки сразу ===
+for (let i = 1; i <= 10; i++) {
+  const btn = document.createElement('button');
+  btn.className = 'number-btn';
+  btn.textContent = i;
+  btn.dataset.index = i - 1;
+  btn.addEventListener('click', () => handleButtonClick(i - 1, btn));
+  container.appendChild(btn);
 }
 
-// Предзагрузка изображений
-function preloadImages() {
-  for (let i = 1; i <= 10; i++) {
+// === 2. Начинаем фоновую загрузку ВСЕХ ресурсов ===
+resources.forEach(res => {
+  res.loadPromise = loadResource(res.index);
+});
+
+// === Функция загрузки одного ресурса ===
+function loadResource(index) {
+  return new Promise((resolve, reject) => {
+    // Загрузка изображения
     const img = new Image();
-    img.src = `${BASE_IMAGE_PATH}${i}.jpg`;
-    img.onload = updateProgress;
-    img.onerror = () => {
-      console.error(`Не удалось загрузить изображение: ${img.src}`);
-      updateProgress(); // всё равно считаем как "загруженный"
-    };
-    imageCache.push(img);
-  }
-}
-
-// Предзагрузка аудио
-function preloadAudio() {
-  for (let i = 1; i <= 10; i++) {
+    img.src = `${BASE_IMAGE_PATH}${index + 1}.jpg`;
+    
+    // Загрузка аудио
     const audio = new Audio();
-    audio.src = `${BASE_AUDIO_PATH}${i}.mp3`;
+    audio.src = `${BASE_AUDIO_PATH}${index + 1}.mp3`;
     audio.preload = 'auto';
-    audio.load(); // явная загрузка
+    audio.load();
 
-    // Для кросс-браузерности: ждём события
+    let imgLoaded = false;
+    let audioLoaded = false;
+
+    const checkComplete = () => {
+      if (imgLoaded && audioLoaded) {
+        resources[index].loaded = true;
+        resources[index].image = img;
+        resources[index].audio = audio;
+        resolve();
+      }
+    };
+
+    img.onload = () => {
+      imgLoaded = true;
+      checkComplete();
+    };
+    img.onerror = () => {
+      console.warn(`Изображение ${index + 1} не загружено`);
+      imgLoaded = true;
+      checkComplete();
+    };
+
+    // Аудио: ждём готовности к воспроизведению
     if (audio.readyState >= 2) {
-      // Достаточно метаданных — считаем загруженным
-      updateProgress();
+      audioLoaded = true;
+      checkComplete();
     } else {
-      audio.addEventListener('canplaythrough', () => updateProgress(), { once: true });
+      audio.addEventListener('canplaythrough', () => {
+        audioLoaded = true;
+        checkComplete();
+      }, { once: true });
       audio.addEventListener('error', () => {
-        console.error(`Не удалось загрузить аудио: ${audio.src}`);
-        updateProgress();
+        console.warn(`Аудио ${index + 1} не загружено`);
+        audioLoaded = true;
+        checkComplete();
       });
     }
-    audioCache.push(audio);
-  }
+  });
 }
 
-// Инициализация игры (создание кнопок и логики)
-function initGame() {
-  let playedCount = 0;
-  const container = document.getElementById('buttons-container');
-  const modal = document.getElementById('modal');
-  const modalImage = document.getElementById('modal-image');
-  const stopButton = document.querySelector('.stop-btn');
-  const completionMessage = document.getElementById('completion-message');
+// === 3. Обработка клика по кнопке ===
+async function handleButtonClick(index, button) {
+  if (button.classList.contains('played')) return;
 
-  // Создание кнопок
-  for (let i = 1; i <= 10; i++) {
-    const btn = document.createElement('button');
-    btn.className = 'number-btn';
-    btn.textContent = i;
-    btn.dataset.index = i - 1;
-    btn.addEventListener('click', () => playTrack(i - 1, btn));
-    container.appendChild(btn);
-  }
+  // Показать модалку с загрузкой
+  modalLoader.style.display = 'block';
+  modalImage.style.display = 'none';
+  stopButton.style.display = 'none';
+  modal.style.display = 'block';
 
-  // Воспроизведение трека (используем предзагруженное аудио)
-  function playTrack(index, button) {
-    if (button.classList.contains('played')) return;
+  // Ждём, пока ресурс загрузится (даже если он уже грузится)
+  await resources[index].loadPromise;
 
-    // Остановить текущее аудио
-    audioCache.forEach(a => {
-      if (!a.paused) a.pause();
-    });
+  // Теперь ресурс готов
+  modalLoader.style.display = 'none';
+  modalImage.src = resources[index].image.src;
+  modalImage.style.display = 'block';
+  stopButton.style.display = 'inline-block';
 
-    const audio = audioCache[index];
-    audio.currentTime = 0; // сброс позиции
+  // Воспроизведение
+  const audio = resources[index].audio;
+  audio.currentTime = 0;
+  audio.play().catch(err => console.error('Ошибка воспроизведения:', err));
 
-    modalImage.src = imageCache[index].src;
-    modal.style.display = 'block';
+  // Обработка завершения
+  const onEnded = () => {
+    finishTrack(button);
+    audio.removeEventListener('ended', onEnded);
+  };
+  audio.addEventListener('ended', onEnded);
 
-    audio.onended = () => finishTrack(button);
-    audio.play().catch(err => {
-      console.error('Ошибка воспроизведения:', err);
-    });
-  }
+  // Кнопка СТОП
+  const stopHandler = () => {
+    audio.pause();
+    finishTrack(button);
+    stopButton.removeEventListener('click', stopHandler);
+  };
+  stopButton.addEventListener('click', stopHandler, { once: true });
 
-  function finishTrack(button) {
-    modal.style.display = 'none';
-    if (!button.classList.contains('played')) {
-      button.classList.add('played');
-      playedCount++;
-      if (playedCount === 10) {
-        completionMessage.style.display = 'block';
-      }
+  // Закрытие по клику вне
+  const clickOutside = (e) => {
+    if (e.target === modal) {
+      stopButton.click();
+      modal.removeEventListener('click', clickOutside);
+    }
+  };
+  modal.addEventListener('click', clickOutside);
+}
+
+// === 4. Завершение трека ===
+function finishTrack(button) {
+  modal.style.display = 'none';
+  if (!button.classList.contains('played')) {
+    button.classList.add('played');
+    playedCount++;
+    if (playedCount === 10) {
+      completionMessage.style.display = 'block';
     }
   }
-
-  stopButton.addEventListener('click', () => {
-    audioCache.forEach(a => a.pause());
-    modal.style.display = 'none';
-    // Найти текущую активную кнопку (не played)
-    const currentBtn = Array.from(document.querySelectorAll('.number-btn'))
-      .find(btn => !btn.classList.contains('played'));
-    if (currentBtn) finishTrack(currentBtn);
-  });
-
-  window.addEventListener('click', (e) => {
-    if (e.target === modal) stopButton.click();
-  });
 }
-
-// Запуск предзагрузки
-preloadImages();
-preloadAudio();

@@ -120,6 +120,23 @@ h1 {
   font-family: Arial, sans-serif;
 }
 
+/* Загрузчик в модалке */
+.loader {
+  font-size: 18px;
+  color: #2c3e50;
+  margin: 20px 0;
+}
+
+/* Анимация (опционально) */
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+.loader {
+  animation: pulse 1.5s infinite;
+}
+
 #loading-screen h2 {
   margin-bottom: 15px;
   font-size: 24px;
