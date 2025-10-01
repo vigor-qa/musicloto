@@ -45,7 +45,7 @@ function loadResource(index) {
     
     // Загрузка аудио
     const audio = new Audio();
-    audio.src = `${BASE_AUDIO_PATH}${index + 1}.mp3`;
+    audio.src = `${BASE_AUDIO_PATH}${index + 1}.opus`;
     audio.preload = 'auto';
     audio.load();
 
