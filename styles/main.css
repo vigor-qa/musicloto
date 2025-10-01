@@ -1,0 +1,105 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background: #f0f8ff;
+  padding: 20px;
+  margin: 0;
+}
+
+h1 {
+  color: #2c3e50;
+}
+
+#buttons-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.number-btn {
+  width: 60px;
+  height: 60px;
+  font-size: 20px;
+  font-weight: bold;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.3s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.number-btn:hover {
+  background: #45a049;
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 100;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.modal-content {
+  background-color: white;
+  margin: 10% auto;
+  padding: 20px;
+  border-radius: 10px;
+  width: 80%;
+  max-width: 500px;
+  text-align: center;
+  position: relative;
+}
+
+.modal-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 10px 0;
+}
+
+.stop-btn {
+  margin-top: 15px;
+  padding: 8px 16px;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.2s;
+}
+
+.stop-btn:hover {
+  background: #c0392b;
+}
+
+#completion-message {
+  display: none;
+  margin-top: 30px;
+  font-size: 24px;
+  color: #27ae60;
+  font-weight: bold;
+}
+
+/* Адаптивность */
+@media (max-width: 600px) {
+  .number-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 18px;
+  }
+
+  .modal-content {
+    width: 90%;
+    padding: 15px;
+  }
+}
