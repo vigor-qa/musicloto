@@ -1,94 +1,132 @@
 // Пути к ресурсам
 const BASE_AUDIO_PATH = 'audio/';
 const BASE_IMAGE_PATH = 'images/';
+const TOTAL_RESOURCES = 20; // 10 аудио + 10 изображений
 
-// Генерация путей для 10 элементов
-const audioSrc = Array.from({ length: 10 }, (_, i) => `${BASE_AUDIO_PATH}${i + 1}.mp3`);
-const imageSrc = Array.from({ length: 10 }, (_, i) => `${BASE_IMAGE_PATH}${i + 1}.jpg`);
+let loadedCount = 0;
+let audioCache = [];
+let imageCache = [];
 
-let currentAudio = null;
-let playedCount = 0; // Счётчик сыгранных уникальных кнопок
+const loadingScreen = document.getElementById('loading-screen');
+const gameContainer = document.getElementById('game-container');
+const progressText = document.getElementById('progress');
 
-// DOM-элементы
-const container = document.getElementById('buttons-container');
-const modal = document.getElementById('modal');
-const modalImage = document.getElementById('modal-image');
-const stopButton = document.querySelector('.stop-btn');
-const completionMessage = document.getElementById('completion-message');
-
-// Создание кнопок
-for (let i = 1; i <= 10; i++) {
-  const btn = document.createElement('button');
-  btn.className = 'number-btn';
-  btn.textContent = i;
-  btn.dataset.index = i - 1;
-  btn.addEventListener('click', () => playTrack(i - 1, btn));
-  container.appendChild(btn);
+// Функция обновления прогресса
+function updateProgress() {
+  loadedCount++;
+  progressText.textContent = `${loadedCount} из ${TOTAL_RESOURCES}`;
+  if (loadedCount === TOTAL_RESOURCES) {
+    // Все ресурсы загружены — показываем игру
+    setTimeout(() => {
+      loadingScreen.style.display = 'none';
+      gameContainer.style.display = 'block';
+      initGame();
+    }, 300); // небольшая задержка для плавности
+  }
 }
 
-// Воспроизведение трека
-function playTrack(index, button) {
-  // Если уже сыграно — не реагировать
-  if (button.classList.contains('played')) {
-    return;
+// Предзагрузка изображений
+function preloadImages() {
+  for (let i = 1; i <= 10; i++) {
+    const img = new Image();
+    img.src = `${BASE_IMAGE_PATH}${i}.jpg`;
+    img.onload = updateProgress;
+    img.onerror = () => {
+      console.error(`Не удалось загрузить изображение: ${img.src}`);
+      updateProgress(); // всё равно считаем как "загруженный"
+    };
+    imageCache.push(img);
+  }
+}
+
+// Предзагрузка аудио
+function preloadAudio() {
+  for (let i = 1; i <= 10; i++) {
+    const audio = new Audio();
+    audio.src = `${BASE_AUDIO_PATH}${i}.mp3`;
+    audio.preload = 'auto';
+    audio.load(); // явная загрузка
+
+    // Для кросс-браузерности: ждём события
+    if (audio.readyState >= 2) {
+      // Достаточно метаданных — считаем загруженным
+      updateProgress();
+    } else {
+      audio.addEventListener('canplaythrough', () => updateProgress(), { once: true });
+      audio.addEventListener('error', () => {
+        console.error(`Не удалось загрузить аудио: ${audio.src}`);
+        updateProgress();
+      });
+    }
+    audioCache.push(audio);
+  }
+}
+
+// Инициализация игры (создание кнопок и логики)
+function initGame() {
+  let playedCount = 0;
+  const container = document.getElementById('buttons-container');
+  const modal = document.getElementById('modal');
+  const modalImage = document.getElementById('modal-image');
+  const stopButton = document.querySelector('.stop-btn');
+  const completionMessage = document.getElementById('completion-message');
+
+  // Создание кнопок
+  for (let i = 1; i <= 10; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'number-btn';
+    btn.textContent = i;
+    btn.dataset.index = i - 1;
+    btn.addEventListener('click', () => playTrack(i - 1, btn));
+    container.appendChild(btn);
   }
 
-  // Остановить текущее аудио
-  if (currentAudio) {
-    currentAudio.pause();
-    currentAudio = null;
+  // Воспроизведение трека (используем предзагруженное аудио)
+  function playTrack(index, button) {
+    if (button.classList.contains('played')) return;
+
+    // Остановить текущее аудио
+    audioCache.forEach(a => {
+      if (!a.paused) a.pause();
+    });
+
+    const audio = audioCache[index];
+    audio.currentTime = 0; // сброс позиции
+
+    modalImage.src = imageCache[index].src;
+    modal.style.display = 'block';
+
+    audio.onended = () => finishTrack(button);
+    audio.play().catch(err => {
+      console.error('Ошибка воспроизведения:', err);
+    });
   }
 
-  const audio = new Audio(audioSrc[index]);
-  currentAudio = audio;
+  function finishTrack(button) {
+    modal.style.display = 'none';
+    if (!button.classList.contains('played')) {
+      button.classList.add('played');
+      playedCount++;
+      if (playedCount === 10) {
+        completionMessage.style.display = 'block';
+      }
+    }
+  }
 
-  // Показать модалку
-  modalImage.src = imageSrc[index];
-  modal.style.display = 'block';
+  stopButton.addEventListener('click', () => {
+    audioCache.forEach(a => a.pause());
+    modal.style.display = 'none';
+    // Найти текущую активную кнопку (не played)
+    const currentBtn = Array.from(document.querySelectorAll('.number-btn'))
+      .find(btn => !btn.classList.contains('played'));
+    if (currentBtn) finishTrack(currentBtn);
+  });
 
-  // Обработка завершения
-  audio.onended = () => finishTrack(button);
-
-  // Воспроизвести
-  audio.play().catch(err => {
-    console.error('Ошибка воспроизведения:', err);
-    alert('Не удалось воспроизвести аудио. Проверьте папку audio/');
+  window.addEventListener('click', (e) => {
+    if (e.target === modal) stopButton.click();
   });
 }
 
-// Остановка вручную
-stopButton.addEventListener('click', () => {
-  if (currentAudio) {
-    currentAudio.pause();
-    currentAudio = null;
-  }
-  // Закрыть модалку и пометить кнопку как сыгранную
-  const buttons = document.querySelectorAll('.number-btn');
-  const currentBtn = Array.from(buttons).find(btn =>
-    !btn.classList.contains('played')
-  );
-  if (currentBtn) finishTrack(currentBtn);
-});
-
-// Завершение: пометить кнопку и проверить победу
-function finishTrack(button) {
-  modal.style.display = 'none';
-
-  // Пометить как сыгранную (только если ещё не помечена)
-  if (!button.classList.contains('played')) {
-    button.classList.add('played');
-    playedCount++;
-
-    // Проверка завершения
-    if (playedCount === 10) {
-      completionMessage.style.display = 'block';
-    }
-  }
-}
-
-// Закрытие модалки по клику вне контента
-window.addEventListener('click', (event) => {
-  if (event.target === modal) {
-    stopButton.click(); // триггерим остановку
-  }
-});
+// Запуск предзагрузки
+preloadImages();
+preloadAudio();

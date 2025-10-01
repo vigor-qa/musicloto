@@ -7,15 +7,24 @@
   <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
-  <h1>🎵 Музыкальное лото</h1>
-  <div id="buttons-container"></div>
-  <div id="completion-message">Поздравляем! Вы прошли музыкальное лото! 🎉</div>
+  <!-- Экран загрузки -->
+  <div id="loading-screen">
+    <h2>Загрузка ресурсов...</h2>
+    <div id="progress">0 из 20</div>
+  </div>
 
-  <!-- Модальное окно -->
-  <div id="modal" class="modal">
-    <div class="modal-content">
-      <img id="modal-image" src="" alt="Изображение">
-      <button class="stop-btn">СТОП</button>
+  <!-- Основной интерфейс (изначально скрыт) -->
+  <div id="game-container" style="display: none;">
+    <h1>🎵 Музыкальное лото</h1>
+    <div id="buttons-container"></div>
+    <div id="completion-message">Поздравляем! Вы прошли музыкальное лото! 🎉</div>
+
+    <!-- Модальное окно -->
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <img id="modal-image" src="" alt="Изображение">
+        <button class="stop-btn">СТОП</button>
+      </div>
     </div>
   </div>
 
