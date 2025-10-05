@@ -1,9 +1,9 @@
 // === КОНФИГУРАЦИЯ ===
-const TOTAL_TRACKS = 34;
+const TOTAL_TRACKS = 42; // ← изменено на 42
 const BASE_AUDIO_PATH = 'audio/';
 const BASE_IMAGE_PATH = 'images/';
-const AUDIO_EXTENSION = '.opus'; // ← теперь .opus
-const IMAGE_EXTENSION = '.jpg';  // можно изменить на .webp, если используете
+const AUDIO_EXTENSION = '.opus';
+const IMAGE_EXTENSION = '.jpg'; // измените на '.webp', если нужно
 
 // Состояние ресурсов
 const resources = Array.from({ length: TOTAL_TRACKS }, (_, i) => ({
@@ -16,7 +16,7 @@ const resources = Array.from({ length: TOTAL_TRACKS }, (_, i) => ({
 
 let playedCount = 0;
 
-// DOM элементы
+// DOM
 const container = document.getElementById('buttons-container');
 const modal = document.getElementById('modal');
 const modalImage = document.getElementById('modal-image');
@@ -24,7 +24,7 @@ const modalLoader = document.getElementById('modal-loader');
 const stopButton = document.querySelector('.stop-btn');
 const completionMessage = document.getElementById('completion-message');
 
-// === 1. Создание кнопок (1 до 34) ===
+// === Создание 42 кнопок ===
 for (let i = 1; i <= TOTAL_TRACKS; i++) {
   const btn = document.createElement('button');
   btn.className = 'number-btn';
@@ -34,7 +34,7 @@ for (let i = 1; i <= TOTAL_TRACKS; i++) {
   container.appendChild(btn);
 }
 
-// === 2. Фоновая загрузка всех ресурсов ===
+// === Фоновая загрузка всех ресурсов ===
 resources.forEach(res => {
   res.loadPromise = loadResource(res.index);
 });
@@ -42,11 +42,9 @@ resources.forEach(res => {
 // === Загрузка одного ресурса ===
 function loadResource(index) {
   return new Promise((resolve) => {
-    // Изображение
     const img = new Image();
     img.src = `${BASE_IMAGE_PATH}${index + 1}${IMAGE_EXTENSION}`;
 
-    // Аудио в формате .opus
     const audio = new Audio();
     audio.src = `${BASE_AUDIO_PATH}${index + 1}${AUDIO_EXTENSION}`;
     audio.preload = 'auto';
@@ -64,70 +62,59 @@ function loadResource(index) {
       }
     };
 
-    // Обработка изображения
     img.onload = img.onerror = () => {
       imgLoaded = true;
       checkComplete();
     };
 
-    // Обработка аудио
     if (audio.readyState >= 2) {
       audioLoaded = true;
       checkComplete();
     } else {
-      // canplaythrough — достаточно данных для воспроизведения без пауз
       audio.addEventListener('canplaythrough', () => {
         audioLoaded = true;
         checkComplete();
       }, { once: true });
-
-      // На случай ошибки (например, неподдерживаемый формат)
       audio.addEventListener('error', () => {
-        console.warn(`⚠️ Не удалось загрузить аудио: ${audio.src}`);
-        audioLoaded = true; // всё равно разблокируем, чтобы не зависнуть
+        console.warn(`⚠️ Ошибка загрузки аудио: ${audio.src}`);
+        audioLoaded = true;
         checkComplete();
       });
     }
   });
 }
 
-// === Обработка клика по кнопке ===
+// === Обработка клика ===
 async function handleButtonClick(index, button) {
   if (button.classList.contains('played')) return;
 
-  // Показать модалку с загрузкой
   modalLoader.style.display = 'block';
   modalImage.style.display = 'none';
   stopButton.style.display = 'none';
   modal.style.display = 'block';
 
-  // Ждём, пока именно этот ресурс загрузится
   await resources[index].loadPromise;
 
-  // Отображаем изображение
   modalLoader.style.display = 'none';
   modalImage.src = resources[index].image.src;
   modalImage.style.display = 'block';
   stopButton.style.display = 'inline-block';
 
-  // Воспроизведение аудио
   const audio = resources[index].audio;
-  audio.currentTime = 0; // сброс позиции
+  audio.currentTime = 0;
   try {
     await audio.play();
   } catch (err) {
-    console.error('Не удалось воспроизвести аудио:', err);
-    alert('Браузер не поддерживает формат OPUS или аудио повреждено.');
+    console.error('Ошибка воспроизведения:', err);
+    alert('Не удалось воспроизвести аудио. Возможно, браузер не поддерживает OPUS.');
   }
 
-  // Обработка завершения воспроизведения
   const onEnded = () => {
     finishTrack(button);
     audio.removeEventListener('ended', onEnded);
   };
   audio.addEventListener('ended', onEnded);
 
-  // Кнопка СТОП
   const stopHandler = () => {
     audio.pause();
     finishTrack(button);
@@ -135,7 +122,6 @@ async function handleButtonClick(index, button) {
   };
   stopButton.addEventListener('click', stopHandler, { once: true });
 
-  // Закрытие модалки по клику вне контента
   const clickOutside = (e) => {
     if (e.target === modal) {
       stopButton.click();
