@@ -4,6 +4,7 @@ const BASE_AUDIO_PATH = 'audio/';
 const BASE_IMAGE_PATH = 'images/';
 const AUDIO_EXTENSION = '.opus';
 const IMAGE_EXTENSION = '.jpg';
+const modalTrackNumber = document.getElementById('modal-track-number');
 
 // Состояние ресурсов
 const resources = Array.from({ length: TOTAL_TRACKS }, (_, i) => ({
@@ -88,12 +89,19 @@ function loadResource(index) {
 async function handleButtonClick(index, button) {
   if (button.classList.contains('played')) return;
 
+  // Показать модалку с загрузкой
   modalLoader.style.display = 'block';
+  modalTrackNumber.style.display = 'none';
   modalImage.style.display = 'none';
   stopButton.style.display = 'none';
   modal.style.display = 'block';
 
   await resources[index].loadPromise;
+
+  // Отобразить номер трека (на 1 больше индекса)
+  const trackNumber = index + 1;
+  modalTrackNumber.textContent = `№${trackNumber}`;
+  modalTrackNumber.style.display = 'block';
 
   modalLoader.style.display = 'none';
   modalImage.src = resources[index].image.src;
