@@ -2,39 +2,38 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   text-align: center;
   background: #f9f9f9;
-  padding: 15px;
+  padding: 12px;
   margin: 0;
 }
 
 h1 {
   color: #2c3e50;
-  margin: 15px 0 25px;
-  font-size: 28px;
+  margin: 12px 0 20px;
+  font-size: 26px;
 }
 
 #buttons-container {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
   margin: 0 auto 25px;
   max-width: 1100px;
-  padding: 0 8px;
+  padding: 0 6px;
 }
 
-/* Кнопки — компактные, но читаемые */
 .number-btn {
-  width: 70px;
-  height: 70px;
-  font-size: 20px;
+  width: 58px;
+  height: 58px;
+  font-size: 16px;
   font-weight: bold;
   background: #4CAF50;
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -42,17 +41,28 @@ h1 {
 
 .number-btn:hover:not(.played) {
   background: #45a049;
-  transform: scale(1.03);
+  transform: scale(1.05);
 }
 
 .number-btn.played {
   background: #95a5a6;
   cursor: not-allowed;
   transform: none;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
-/* Модальное окно */
+#completion-message {
+  display: none;
+  margin: 25px auto 0;
+  font-size: 24px;
+  color: #27ae60;
+  font-weight: bold;
+  padding: 14px 20px;
+  background: #e8f5e9;
+  border-radius: 10px;
+  max-width: 600px;
+}
+
 .modal {
   display: none;
   position: fixed;
@@ -61,18 +71,17 @@ h1 {
   top: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: rgba(0, 0, 0, 0.85);
 }
 
 .modal-content {
   background-color: white;
-  margin: 6% auto;
+  margin: 5% auto;
   padding: 20px;
   border-radius: 14px;
   width: 92%;
-  max-width: 520px;
+  max-width: 500px;
   text-align: center;
-  position: relative;
 }
 
 .modal-content img {
@@ -80,7 +89,20 @@ h1 {
   height: auto;
   border-radius: 10px;
   margin: 12px 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.loader {
+  font-size: 18px;
+  color: #2c3e50;
+  margin: 20px 0;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
 }
 
 .stop-btn {
@@ -100,47 +122,10 @@ h1 {
   background: #c0392b;
 }
 
-#completion-message {
-  display: none;
-  margin: 25px auto 0;
-  font-size: 24px;
-  color: #27ae60;
-  font-weight: bold;
-  padding: 14px 20px;
-  background: #e8f5e9;
-  border-radius: 10px;
-  max-width: 600px;
-}
-
-/* Загрузчик */
-.loader {
-  font-size: 18px;
-  color: #2c3e50;
-  margin: 20px 0;
-  animation: pulse 1.5s infinite;
-}
-@keyframes pulse {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
-}
-
-/* Адаптивность */
 @media (max-width: 600px) {
   .number-btn {
-    width: 60px;
-    height: 60px;
-    font-size: 18px;
-  }
-  h1 {
-    font-size: 24px;
-  }
-}
-
-@media (min-width: 1200px) {
-  .number-btn {
-    width: 76px;
-    height: 76px;
-    font-size: 22px;
+    width: 50px;
+    height: 50px;
+    font-size: 14px;
   }
 }

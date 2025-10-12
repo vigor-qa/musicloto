@@ -1,9 +1,9 @@
 // === КОНФИГУРАЦИЯ ===
-const TOTAL_TRACKS = 42; // ← изменено на 42
+const TOTAL_TRACKS = 70; // ← 70 кнопок
 const BASE_AUDIO_PATH = 'audio/';
 const BASE_IMAGE_PATH = 'images/';
 const AUDIO_EXTENSION = '.opus';
-const IMAGE_EXTENSION = '.jpg'; // измените на '.webp', если нужно
+const IMAGE_EXTENSION = '.jpg';
 
 // Состояние ресурсов
 const resources = Array.from({ length: TOTAL_TRACKS }, (_, i) => ({
@@ -24,7 +24,7 @@ const modalLoader = document.getElementById('modal-loader');
 const stopButton = document.querySelector('.stop-btn');
 const completionMessage = document.getElementById('completion-message');
 
-// === Создание 42 кнопок ===
+// === Создание 70 кнопок ===
 for (let i = 1; i <= TOTAL_TRACKS; i++) {
   const btn = document.createElement('button');
   btn.className = 'number-btn';
@@ -76,7 +76,7 @@ function loadResource(index) {
         checkComplete();
       }, { once: true });
       audio.addEventListener('error', () => {
-        console.warn(`⚠️ Ошибка загрузки аудио: ${audio.src}`);
+        console.warn(`⚠️ Не загружено: ${audio.src}`);
         audioLoaded = true;
         checkComplete();
       });
@@ -106,7 +106,7 @@ async function handleButtonClick(index, button) {
     await audio.play();
   } catch (err) {
     console.error('Ошибка воспроизведения:', err);
-    alert('Не удалось воспроизвести аудио. Возможно, браузер не поддерживает OPUS.');
+    alert('Браузер не поддерживает OPUS или файл повреждён.');
   }
 
   const onEnded = () => {
