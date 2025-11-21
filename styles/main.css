@@ -90,10 +90,12 @@ h1 {
 }
 
 .modal-content img {
-  max-width: 100%;
+  max-width: 90%;
+  width: auto;
   height: auto;
-  border-radius: 10px;
-  margin: 12px 0;
+  border-radius: 12px;
+  margin: 12px auto;
+  display: block;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
