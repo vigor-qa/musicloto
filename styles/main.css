@@ -49,7 +49,7 @@ h1 {
 }
 
 .number-btn.played {
-  color: #4f2c91;         /* Тёмно-фиолетовый */
+  background: #4f2c91;         /* Новый цвет фона */
   color: white;                /* Белый текст */
   cursor: not-allowed;
   transform: none;
