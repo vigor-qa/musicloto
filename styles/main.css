@@ -31,7 +31,7 @@ h1 {
   font-size: 18px;
   font-weight: bold;
   background: #d3d3d3;          /* Светло-серый */
-  color: #8e44ad;              /* Фиолетовый текст */
+  color: #4f2c91;              /* Фиолетовый текст */
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -49,7 +49,7 @@ h1 {
 }
 
 .number-btn.played {
-  background: #6c3483;         /* Тёмно-фиолетовый */
+  color: #4f2c91;         /* Тёмно-фиолетовый */
   color: white;                /* Белый текст */
   cursor: not-allowed;
   transform: none;
