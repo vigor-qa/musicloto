@@ -1,10 +1,9 @@
 // === КОНФИГУРАЦИЯ ===
-const TOTAL_TRACKS = 70; // ← 70 кнопок
+const TOTAL_TRACKS = 40; // ← главная настройка
 const BASE_AUDIO_PATH = 'audio/';
 const BASE_IMAGE_PATH = 'images/';
 const AUDIO_EXTENSION = '.opus';
 const IMAGE_EXTENSION = '.jpg';
-const modalTrackNumber = document.getElementById('modal-track-number');
 
 // Состояние ресурсов
 const resources = Array.from({ length: TOTAL_TRACKS }, (_, i) => ({
@@ -22,10 +21,11 @@ const container = document.getElementById('buttons-container');
 const modal = document.getElementById('modal');
 const modalImage = document.getElementById('modal-image');
 const modalLoader = document.getElementById('modal-loader');
+const modalTrackNumber = document.getElementById('modal-track-number');
 const stopButton = document.querySelector('.stop-btn');
 const completionMessage = document.getElementById('completion-message');
 
-// === Создание 70 кнопок ===
+// === Создание 40 кнопок ===
 for (let i = 1; i <= TOTAL_TRACKS; i++) {
   const btn = document.createElement('button');
   btn.className = 'number-btn';
@@ -86,6 +86,69 @@ function loadResource(index) {
 }
 
 // === Обработка клика ===
+async function handleButtonClick(index, button) {
+  if (button.classList.contains('played')) return;
+
+  modalLoader.style.display = 'block';
+  modalTrackNumber.style.display = 'none';
+  modalImage.style.display = 'none';
+  stopButton.style.display = 'none';
+  modal.style.display = 'block';
+
+  await resources[index].loadPromise;
+
+  const trackNumber = index + 1;
+  modalTrackNumber.textContent = `№${trackNumber}`;
+  modalTrackNumber.style.display = 'block';
+
+  modalLoader.style.display = 'none';
+  modalImage.src = resources[index].image.src;
+  modalImage.style.display = 'block';
+  stopButton.style.display = 'inline-block';
+
+  const audio = resources[index].audio;
+  audio.currentTime = 0;
+  try {
+    await audio.play();
+  } catch (err) {
+    console.error('Ошибка воспроизведения:', err);
+    alert('Браузер не поддерживает OPUS или файл повреждён.');
+  }
+
+  const onEnded = () => {
+    finishTrack(button);
+    audio.removeEventListener('ended', onEnded);
+  };
+  audio.addEventListener('ended', onEnded);
+
+  const stopHandler = () => {
+    audio.pause();
+    finishTrack(button);
+    stopButton.removeEventListener('click', stopHandler);
+  };
+  stopButton.addEventListener('click', stopHandler, { once: true });
+
+  const clickOutside = (e) => {
+    if (e.target === modal) {
+      stopButton.click();
+      modal.removeEventListener('click', clickOutside);
+    }
+  };
+  modal.addEventListener('click', clickOutside);
+}
+
+// === Завершение трека ===
+function finishTrack(button) {
+  modal.style.display = 'none';
+  if (!button.classList.contains('played')) {
+    button.classList.add('played');
+    playedCount++;
+    if (playedCount === TOTAL_TRACKS) {
+      completionMessage.style.display = 'block';
+    }
+  }
+}
+//=== Обработка клика ===
 async function handleButtonClick(index, button) {
   if (button.classList.contains('played')) return;
 
